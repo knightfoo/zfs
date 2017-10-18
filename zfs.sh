@@ -33,7 +33,7 @@ partition_disks() {
 }	
 
 create_zpool() {
-	
+	#zpool create -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt tank0 mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VB679d4313-9a878091 /dev/disk/by-id/ata-VBOX_HARDDISK_VB9c66a80e-e138249a mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VBb2041ff0-9c27fdcc /dev/disk/by-id/ata-VBOX_HARDDISK_VBbd4505a1-546c1f04 	
 
 }
 

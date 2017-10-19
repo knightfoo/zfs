@@ -4,6 +4,7 @@
 # uwzglednic EFI
 
 zpool_name=tank0
+ubuntu_version=xenial
 
 DISKS_byid=()
 DISKS_dev=()
@@ -81,13 +82,40 @@ create_datasets() {
 
 install_ubuntu() {
 	chmod 1777 /mnt/var/tmp
-	debootstrap xenial /mnt
+	debootstrap ${ubuntu_version} /mnt
 	zfs set devices=off ${zpool_name}
+}
+
+configure_os() {
+
+	echo ${hostname_} > /mnt/etc/hostname
+	echo "127.0.1.1		${hostname_}" >> /mnt/etc/hosts
+	#tee /mnt/etc/hosts <<EOF
+	#127.0.1.1       ${hostname_}
+	#EOF
+	
+	tee /mnt/etc/apt/sources.list <<EOF
+	deb http://archive.ubuntu.com/ubuntu ${ubuntu_version} main universe
+	deb-src http://archive.ubuntu.com/ubuntu ${ubuntu_version} main universe
+
+	deb http://security.ubuntu.com/ubuntu ${ubuntu_version}-security main universe
+	deb-src http://security.ubuntu.com/ubuntu ${ubuntu_version}-security main universe
+
+	deb http://archive.ubuntu.com/ubuntu ${ubuntu_version}-updates main universe
+	deb-src http://archive.ubuntu.com/ubuntu ${ubuntu_version}-updates main universe
+	EOF
+
+	echo "Sieciowanie konfiguruje"
+	
+
+
 
 
 }
 
-
 disks
 clean_disks
 create_zpool
+create_datasets
+install_ubuntu
+

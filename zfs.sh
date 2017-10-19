@@ -1,6 +1,7 @@
 #!/bin/bash -x 
 
 #https://github.com/zfsonlinux/zfs/wiki/Ubuntu-16.04-Root-on-ZFS
+# uwzglednic EFI
 
 zpool_name=tank0
 
@@ -33,12 +34,29 @@ partition_disks() {
 }	
 
 create_zpool() {
+	ile=0
+	dyski=""
 	#zpool create -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt tank0 mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VB679d4313-9a878091 /dev/disk/by-id/ata-VBOX_HARDDISK_VB9c66a80e-e138249a mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VBb2041ff0-9c27fdcc /dev/disk/by-id/ata-VBOX_HARDDISK_VBbd4505a1-546c1f04 	
+
+	for d_ in ${DISKS_byid[@]};
+	do
+		if [ $ile -lt 2 ];
+		then
+			ile=$((${ile}+1))
+			dyski="$dyski /dev/$d_"
+		else
+			span=$((${span}+1))
+			ile=1
+			dyski=""
+			dyski="$dyski /dev/$d_"
+		fi
+		
+		[ ${ile} -eq 2 ] && (echo "Creating: $dyski") 
+	done
 
 }
 
 
 disks
-echo "Dyski - ${DISKS_dev[@]} "
 
 create_zpool

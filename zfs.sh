@@ -58,11 +58,26 @@ create_zpool() {
 
 create_zpool_() {
 	SPAN=0
-	SPANS
+	SPANS=$((${#DISKS_byid[@]}/2))
 	dyski=""
 	#zpool create -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt tank0 mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VB679d4313-9a878091 /dev/disk/by-id/ata-VBOX_HARDDISK_VB9c66a80e-e138249a mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VBb2041ff0-9c27fdcc /dev/disk/by-id/ata-VBOX_HARDDISK_VBbd4505a1-546c1f04 	
+	
+	echo "SPAN ${SPAN} - SPANS ${SPANS}"
 
-echo | awk -v span=${SPAN} -v zfsparts="${ZFSPARTS}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
+	echo ${DISKS_byid[@]}
+	
+
+	while [ "${SPAN}" -lt "${SPANS}" ]
+	do
+ 		if [ ${SPAN} -eq 0 ]
+ 		then
+  			echo "zpool create ${POOL} mirror `echo | awk -v span=${SPAN} -v zfsparts="${DISKS_byid[@]}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`"
+ 		else
+  			echo "zpool add ${POOL} mirror `echo | awk -v span=${SPAN} -v zfsparts="${DISKS_byid[@]}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`"
+ 		fi
+        	SPAN=$((${SPAN}+1))
+	done
+#echo | awk -v span=${SPAN} -v zfsparts="${ZFSPARTS}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
 
 
 }

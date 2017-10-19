@@ -5,6 +5,7 @@
 
 zpool_name=tank0
 ubuntu_version=xenial
+hostname=$1
 
 DISKS_byid=()
 DISKS_dev=()

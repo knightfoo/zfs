@@ -66,26 +66,27 @@ create_zpool() {
 	
 	echo "SPAN ${SPAN} - SPANS ${SPANS}"
 
-	echo ${DISKS_byid[@]}
-	
+	dyski=${DISKS_byid[@]}
+
+	echo "Lista $lista"
+
 
 	while [ "${SPAN}" -lt "${SPANS}" ]
 	do
  		if [ ${SPAN} -eq 0 ]
  		then
-  			zpool create ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${DISKS_byid[@]}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
+  			zpool create -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
  		else
-  			#zpool add ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${DISKS_byid[@]}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
-			exit
+  			zpool add -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
+			
  		fi
         	SPAN=$((${SPAN}+1))
 	done
-#echo | awk -v span=${SPAN} -v zfsparts="${ZFSPARTS}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
 
 
 }
 
 
 disks
-
+clean_disks
 create_zpool

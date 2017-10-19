@@ -33,31 +33,6 @@ partition_disks() {
 	done
 }	
 
-create_zpool_() {
-	ile=0
-	dyski=""
-	#zpool create -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt tank0 mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VB679d4313-9a878091 /dev/disk/by-id/ata-VBOX_HARDDISK_VB9c66a80e-e138249a mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VBb2041ff0-9c27fdcc /dev/disk/by-id/ata-VBOX_HARDDISK_VBbd4505a1-546c1f04 	
-
-	for d_ in ${DISKS_byid[@]};
-	do
-		if [ $ile -lt 2 ];
-		then
-			ile=$((${ile}+1))
-			dyski="$dyski $d_"
-			echo "Create"
-		else
-			span=$((${span}+1))
-			#ile=1
-			dyski=""
-			dyski="$dyski $d_"
-			echo "append"
-		fi
-		
-		#[ ${ile} -eq 2 ] && (echo "Creating: $dyski") 
-	done
-
-}
-
 create_zpool() {
 	SPAN=0
 	SPANS=$((${#DISKS_byid[@]}/2))
@@ -75,7 +50,7 @@ create_zpool() {
 	do
  		if [ ${SPAN} -eq 0 ]
  		then
-  			zpool create -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
+  			zpool create -f create -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
  		else
   			zpool add -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
 			

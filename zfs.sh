@@ -8,6 +8,8 @@ zpool_name=tank0
 DISKS_byid=()
 DISKS_dev=()
 
+zpool destroy -f ${zpool_name}
+
 disks() {
 	while read d_; 
 	do 
@@ -37,14 +39,9 @@ create_zpool() {
 	SPAN=0
 	SPANS=$((${#DISKS_byid[@]}/2))
 	dyski=""
-	#zpool create -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt tank0 mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VB679d4313-9a878091 /dev/disk/by-id/ata-VBOX_HARDDISK_VB9c66a80e-e138249a mirror /dev/disk/by-id/ata-VBOX_HARDDISK_VBb2041ff0-9c27fdcc /dev/disk/by-id/ata-VBOX_HARDDISK_VBbd4505a1-546c1f04 	
-	
 	echo "SPAN ${SPAN} - SPANS ${SPANS}"
-
 	dyski=${DISKS_byid[@]}
-
 	echo "Lista $lista"
-
 
 	while [ "${SPAN}" -lt "${SPANS}" ]
 	do
@@ -57,6 +54,35 @@ create_zpool() {
  		fi
         	SPAN=$((${SPAN}+1))
 	done
+
+}
+
+create_datasets() {
+	zfs create -o canmount=off -o mountpoint=none ${zpool_name}/ROOT
+	zfs create -o canmount=noauto -o mountpoint=/ ${zpool_name}/ROOT/ubuntu
+	zfs mount ${zpool_name}/ROOT/ubuntu
+
+	zfs create -o setuid=off ${zpool_name}/home
+        zfs create -o mountpoint=/root ${zpool_name}/home/root
+        zfs create -o canmount=off -o setuid=off  -o exec=off ${zpool_name}/var
+	zfs create -o com.sun:auto-snapshot=false             ${zpool_name}/var/cache
+	zfs create ${zpool_name}/var/log
+	zfs create ${zpool_name}/var/spool
+	zfs create -o com.sun:auto-snapshot=false -o exec=on  ${zpool_name}/var/tmp
+
+	zfs create ${zpool_name}/srv
+	zfs create ${zpool_name}/var/games
+	zfs create ${zpool_name}/var/mail
+
+	# zfs create -o com.sun:auto-snapshot=false \
+        #     -o mountpoint=/var/lib/nfs                 ${zpool_name}/var/nfs
+
+}
+
+install_ubuntu() {
+	chmod 1777 /mnt/var/tmp
+	debootstrap xenial /mnt
+	zfs set devices=off ${zpool_name}
 
 
 }

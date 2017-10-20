@@ -93,7 +93,7 @@ install_ubuntu() {
 	zfs set devices=off ${zpool_name}
 }
 
-configure_os() {
+conf_os() {
 
 	echo ${hostname_} > /mnt/etc/hostname
 	echo "127.0.1.1		${hostname_}" >> /mnt/etc/hosts
@@ -113,12 +113,38 @@ configure_os() {
 	EOF
 
 	echo "Sieciowanie konfiguruje"
-	dev_=$(ip route get 8.8.8.8  | grep -Po '(?<=(dev )).*(?= src| proto)')	
+	def_iface=$(ip route get 8.8.8.8 |awk '{print $5}' )	
+	def_ip=$(ip addr show dev "$def_iface" | awk '$1 == "inet" { sub("/.*", "", $2); print $2 }')
 
+	echo "$def_iface - $def_ip"
+	printf "auto %s\niface %s inet dhcp" ${def_iface} ${def_iface} > /mnt/etc/network/interfaces.d/${def_iface} 
+
+	mount --rbind /dev  /mnt/dev
+	mount --rbind /proc /mnt/proc
+	mount --rbind /sys  /mnt/sys
+
+	chroot /mnt locale-gen en_US.UTF-8
+	chroot /mnt echo LANG=en_US.UTF-8 > /etc/default/locale
+	echo "Europe/Warsaw" > /mnt/etc/timezone 	
+	chroot /mnt dpkg-reconfigure -f noninteractive tzdata
+	chroot /mnt ln -s /proc/self/mounts /etc/mtab
+	chroot /mnt apt update	
+	chroot /mnt apt install --yes ubuntu-minimal
+	chroot /mnt apt install --yes vim-tiny
+
+	chroot /mnt apt install --yes --no-install-recommends linux-image-generic
+	chroot /mnt apt install --yes zfs-initramfs
+
+	chroot /mnt apt install --yes grub-pc
 
 
 
 }
+
+conf_net
+
+exit
+
 
 if [ "$1" == "apt" ];
 then
@@ -131,6 +157,6 @@ else
 	create_zpool
 	create_datasets
 	install_ubuntu
-	configure_os
+	conf_os
 fi
 

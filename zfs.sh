@@ -141,10 +141,6 @@ conf_os() {
 
 }
 
-conf_net
-
-exit
-
 
 if [ "$1" == "apt" ];
 then

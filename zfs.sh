@@ -76,6 +76,7 @@ create_zpool() {
         	SPAN=$((${SPAN}+1))
 	done
 
+
 }
 
 create_datasets() {

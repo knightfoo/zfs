@@ -38,10 +38,10 @@ clean_disks() {
 
 
 partition_disks() {
-	for d_ in ${DISKS_byid[@]};
+	for d_ in ${DISKS_dev[@]};
 	do 
-		sgdisk -a1 -n2:34:2047  -t2:EF02 ${d_} 
-		#parted --script /dev/sda mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 100% set 1 bios_grub on set 2 boot on
+		#sgdisk -a1 -n2:34:2047  -t2:EF02 ${d_} 
+		parted --script ${d_} mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 100% set 1 bios_grub on set 2 boot on
 
 	done
 }	
@@ -153,9 +153,10 @@ else
 	zpool destroy -f ${zpool_name}
 	disks
 	clean_disks
-	create_zpool
-	create_datasets
-	install_ubuntu
-	conf_os
+	partition_disks
+	#create_zpool
+	#create_datasets
+	#install_ubuntu
+	#conf_os
 fi
 

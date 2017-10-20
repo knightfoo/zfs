@@ -10,7 +10,13 @@ hostname=$1
 DISKS_byid=()
 DISKS_dev=()
 
-zpool destroy -f ${zpool_name}
+
+
+apt_zfs() {
+	apt-add-repository universe
+	apt update
+	apt install --yes debootstrap gdisk zfs-initramfs
+}
 
 disks() {
 	while read d_; 
@@ -95,7 +101,7 @@ configure_os() {
 	#127.0.1.1       ${hostname_}
 	#EOF
 	
-	tee /mnt/etc/apt/sources.list <<EOF
+	tee /mnt/etc/apt/sources.list <<-EOF
 	deb http://archive.ubuntu.com/ubuntu ${ubuntu_version} main universe
 	deb-src http://archive.ubuntu.com/ubuntu ${ubuntu_version} main universe
 
@@ -107,16 +113,24 @@ configure_os() {
 	EOF
 
 	echo "Sieciowanie konfiguruje"
-	
+	dev_=$(ip route get 8.8.8.8  | grep -Po '(?<=(dev )).*(?= src| proto)')	
 
 
 
 
 }
 
-disks
-clean_disks
-create_zpool
-create_datasets
-install_ubuntu
+if [ "$1" == "apt" ];
+then
+	apt_zfs
+else
+	echo "tu"
+	zpool destroy -f ${zpool_name}
+	disks
+	clean_disks
+	create_zpool
+	create_datasets
+	install_ubuntu
+	configure_os
+fi
 

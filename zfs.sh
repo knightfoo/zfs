@@ -3,6 +3,7 @@
 #https://github.com/zfsonlinux/zfs/wiki/Ubuntu-16.04-Root-on-ZFS
 # uwzglednic EFI
 # https://wiki.archlinux.org/index.php/Installing_Arch_Linux_on_ZFS
+#https://newspaint.wordpress.com/2017/04/09/zfs-grub-issues-on-boot/
 
 zpool_name=tank0
 ubuntu_version=xenial
@@ -11,7 +12,14 @@ hostname=$1
 DISKS_byid=()
 DISKS_dev=()
 
+export ZPOOL_VDEV_NAME_PATH=YES
 
+cleanall() {
+	zfs set mountpoint=none tank0
+	killall -9 nautilus
+	umount -l /mnt
+	zpool destroy -f tank0
+}
 
 apt_zfs() {
 	apt-add-repository universe
@@ -148,15 +156,18 @@ conf_os() {
 if [ "$1" == "apt" ];
 then
 	apt_zfs
+
+elif [ "$1" == "clean" ];
+	clean
 else
 	echo "tu"
 	zpool destroy -f ${zpool_name}
 	disks
 	clean_disks
 	partition_disks
-	#create_zpool
-	#create_datasets
-	#install_ubuntu
-	#conf_os
+	create_zpool
+	create_datasets
+	install_ubuntu
+	conf_os
 fi
 

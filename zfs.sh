@@ -2,6 +2,7 @@
 
 #https://github.com/zfsonlinux/zfs/wiki/Ubuntu-16.04-Root-on-ZFS
 # uwzglednic EFI
+# https://wiki.archlinux.org/index.php/Installing_Arch_Linux_on_ZFS
 
 zpool_name=tank0
 ubuntu_version=xenial
@@ -40,6 +41,8 @@ partition_disks() {
 	for d_ in ${DISKS_byid[@]};
 	do 
 		sgdisk -a1 -n2:34:2047  -t2:EF02 ${d_} 
+		#parted --script /dev/sda mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 100% set 1 bios_grub on set 2 boot on
+
 	done
 }	
 

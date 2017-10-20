@@ -4,7 +4,9 @@
 # uwzglednic EFI
 # https://wiki.archlinux.org/index.php/Installing_Arch_Linux_on_ZFS
 #https://newspaint.wordpress.com/2017/04/09/zfs-grub-issues-on-boot/
-
+#https://help.ubuntu.com/community/Grub2/Installing 
+#http://www.thecrosseroads.net/2016/02/booting-a-zfs-root-via-uefi-on-debian/
+ 
 zpool_name=tank0
 ubuntu_version=xenial
 hostname=$1
@@ -60,15 +62,15 @@ create_zpool() {
 	dyski=""
 	echo "SPAN ${SPAN} - SPANS ${SPANS}"
 	dyski=${DISKS_byid[@]}
-	echo "Lista $lista"
+	echo "Lista $dyski"
 
 	while [ "${SPAN}" -lt "${SPANS}" ]
 	do
  		if [ ${SPAN} -eq 0 ]
  		then
-  			zpool create -f -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
+  			zpool create -f -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part2" " " arr[span+span+2]"-part2" }'`
  		else
-  			zpool add -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1] " " arr[span+span+2] }'`
+  			zpool add -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part2" " " arr[span+span+2]"-part2" }'`
 			
  		fi
         	SPAN=$((${SPAN}+1))
@@ -140,7 +142,7 @@ conf_os() {
 	chroot /mnt dpkg-reconfigure -f noninteractive tzdata
 	chroot /mnt ln -s /proc/self/mounts /etc/mtab
 	chroot /mnt apt update	
-	chroot /mnt apt install --yes ubuntu-minimal
+	#chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
 
 	chroot /mnt apt install --yes --no-install-recommends linux-image-generic
@@ -157,8 +159,11 @@ if [ "$1" == "apt" ];
 then
 	apt_zfs
 
-elif [ "$1" == "clean" ];
-	clean
+elif [ "$1" == "clean" ]; then
+	cleanall
+	zpool destroy -f ${zpool_name}
+	disks
+	clean_disks
 else
 	echo "tu"
 	zpool destroy -f ${zpool_name}

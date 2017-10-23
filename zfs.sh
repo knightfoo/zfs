@@ -53,6 +53,10 @@ partition_disks() {
 		#sgdisk -a1 -n2:34:2047  -t2:EF02 ${d_} 
 		parted --script ${d_} mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 100% set 1 bios_grub on set 2 boot on
 
+		#sgdisk -n1:0:+2M -t1:EF02 /dev/sdX
+		#sgdisk -n2:0:-4G -t2:BF01 /dev/sdX
+		#sgdisk -n3:0 -t3:fd00 /dev/sdX
+
 	done
 }	
 

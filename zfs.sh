@@ -187,7 +187,7 @@ then
 	apt_zfs
 
 elif [ "$1" == "clean" ]; then
-	for i in /dev /dev/pts /proc /sys /run; do umount -B $i /mnt$i; done
+	for i in /dev /dev/pts /proc /sys /run; do umount -f /mnt$i; done
 	cleanall
 	zpool destroy -f ${zpool_name}
 	disks

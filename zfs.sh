@@ -55,7 +55,7 @@ partition_disks() {
 		#parted --script ${d_} mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 3 mkpart primary 3 100% set 1 bios_grub on set 2 boot on
 
 		sgdisk -Z -n9:-8M:0 -t9:bf07 -c9:Reserved -n2:-8M:0 -t2:ef02 -c2:GRUB -n1:0:0 -t1:bf01 -c1:ZFS ${d_}
-		sgdisk -p ${d_}
+		#sgdisk -p ${d_}
 	
 		#sgdisk -n 0i:0:+2M -t 0:EF02 -c 0:"bios_boot" ${d_}
 		#sgdisk -n 0:0:+2M -t 0:8200 -c 0:"linux_swap" ${d_}
@@ -123,7 +123,7 @@ conf_os() {
 	#127.0.1.1       ${hostname_}
 	#EOF
 
-	tea /etc/udev/rules.d/90-zfs.rules <<-EOF
+	tee /etc/udev/rules.d/90-zfs.rules <<-EOF
 	KERNEL=="sd*[!0-9]", IMPORT{parent}=="ID_*", SYMLINK+="$env{ID_BUS}-$env{ID_SERIAL}"
 	KERNEL=="sd*[0-9]", IMPORT{parent}=="ID_*", SYMLINK+="$env{ID_BUS}-$env{ID_SERIAL}-part%n"
 	EOF
@@ -153,9 +153,11 @@ conf_os() {
 	echo "$def_iface - $def_ip"
 	printf "auto %s\niface %s inet dhcp" ${def_iface} ${def_iface} > /mnt/etc/network/interfaces.d/${def_iface} 
 
-	mount --rbind /dev  /mnt/dev
-	mount --rbind /proc /mnt/proc
-	mount --rbind /sys  /mnt/sys
+	#mount --rbind /dev  /mnt/dev
+	#mount --rbind /proc /mnt/proc
+	#mount --rbind /sys  /mnt/sys
+
+	for i in /dev /dev/pts /proc /sys /run; do mount -B $i /mnt$i; done
 
 	chroot /mnt locale-gen en_US.UTF-8
 	chroot /mnt echo LANG=en_US.UTF-8 > /etc/default/locale
@@ -165,16 +167,17 @@ conf_os() {
 	chroot /mnt apt update	
 	#chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
+	#chroot /mnt apt install --yes zfsutils-linux zfs-initramfs zfs-dkms zfs-zed linux-image-$(uname -r) linux-image-extra-$(uname -r) linux-headers-$(uname -r) grub2-common grub-pc acpi-support vim sendmail
+	#chroot /mnt apt install --yes --no-install-recommends linux-image-generic
+	#chroot /mnt apt install --yes zfs-initramfs
 
-	chroot /mnt apt install --yes --no-install-recommends linux-image-generic
-	chroot /mnt apt install --yes zfs-initramfs
-
-	chroot /mnt apt install --yes grub-pcZ
+	#chroot /mnt apt install --yes grub-pc
 
 	grub-probe /mnt
 	for d_ in ${DISKS_dev[@]};
         do
 		grub-install --root-directory=/mnt ${d_}
+		chroot /mnt 
 	done
 }
 
@@ -184,6 +187,7 @@ then
 	apt_zfs
 
 elif [ "$1" == "clean" ]; then
+	for i in /dev /dev/pts /proc /sys /run; do umount -B $i /mnt$i; done
 	cleanall
 	zpool destroy -f ${zpool_name}
 	disks

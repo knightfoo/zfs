@@ -42,7 +42,7 @@ clean_disks() {
 	for d_ in ${DISKS_dev[@]};
 	do
 		echo "Czyszcze dysk $d_"
-		sgdisk --zap-all ${d_}
+		sgdisk --zap-all -o ${d_}
 	done
 }
 
@@ -51,11 +51,15 @@ partition_disks() {
 	for d_ in ${DISKS_dev[@]};
 	do 
 		#sgdisk -a1 -n2:34:2047  -t2:EF02 ${d_} 
-		parted --script ${d_} mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 100% set 1 bios_grub on set 2 boot on
+		#parted --script ${d_} mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 100% set 1 bios_grub on set 2 boot on
+		#parted --script ${d_} mklabel gpt mkpart non-fs 0% 2 mkpart primary 2 3 mkpart primary 3 100% set 1 bios_grub on set 2 boot on
 
-		#sgdisk -n1:0:+2M -t1:EF02 /dev/sdX
-		#sgdisk -n2:0:-4G -t2:BF01 /dev/sdX
-		#sgdisk -n3:0 -t3:fd00 /dev/sdX
+		sgdisk -Z -n9:-8M:0 -t9:bf07 -c9:Reserved -n2:-8M:0 -t2:ef02 -c2:GRUB -n1:0:0 -t1:bf01 -c1:ZFS ${d_}
+		sgdisk -p ${d_}
+	
+		#sgdisk -n 0i:0:+2M -t 0:EF02 -c 0:"bios_boot" ${d_}
+		#sgdisk -n 0:0:+2M -t 0:8200 -c 0:"linux_swap" ${d_}
+		#sgdisk -n 0:0:0 -t 0:8300 -c 0:"data" ${d_}
 
 	done
 }	
@@ -72,9 +76,9 @@ create_zpool() {
 	do
  		if [ ${SPAN} -eq 0 ]
  		then
-  			zpool create -f -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part2" " " arr[span+span+2]"-part2" }'`
+  			zpool create -f -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part1" " " arr[span+span+2]"-part1" }'`
  		else
-  			zpool add -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part2" " " arr[span+span+2]"-part2" }'`
+  			zpool add -f ${zpool_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part1" " " arr[span+span+2]"-part1" }'`
 			
  		fi
         	SPAN=$((${SPAN}+1))
@@ -118,6 +122,18 @@ conf_os() {
 	#tee /mnt/etc/hosts <<EOF
 	#127.0.1.1       ${hostname_}
 	#EOF
+
+	tea /etc/udev/rules.d/90-zfs.rules <<-EOF
+	KERNEL=="sd*[!0-9]", IMPORT{parent}=="ID_*", SYMLINK+="$env{ID_BUS}-$env{ID_SERIAL}"
+	KERNEL=="sd*[0-9]", IMPORT{parent}=="ID_*", SYMLINK+="$env{ID_BUS}-$env{ID_SERIAL}-part%n"
+	EOF
+
+	udevadm trigger
+
+	ls -l /dev/disk/by-id /dev
+
+	cp /etc/udev/rules.d/90-zfs.rules /mnt/etc/udev/rules.d/90-zfs.rules
+
 	
 	tee /mnt/etc/apt/sources.list <<-EOF
 	deb http://archive.ubuntu.com/ubuntu ${ubuntu_version} main universe
@@ -153,10 +169,13 @@ conf_os() {
 	chroot /mnt apt install --yes --no-install-recommends linux-image-generic
 	chroot /mnt apt install --yes zfs-initramfs
 
-	chroot /mnt apt install --yes grub-pc
+	chroot /mnt apt install --yes grub-pcZ
 
-
-
+	grub-probe /mnt
+	for d_ in ${DISKS_dev[@]};
+        do
+		grub-install --root-directory=/mnt ${d_}
+	done
 }
 
 

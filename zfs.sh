@@ -196,6 +196,6 @@ else
 	create_zpool
 	create_datasets
 	install_ubuntu
-	#conf_os
+	conf_os
 fi
 

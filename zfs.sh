@@ -179,7 +179,8 @@ conf_os() {
     useradd -d /home/admin -m -G sudo -R /mnt -s /bin/bash admin
 
     echo "haslo admina"
-    chroot /mnt echo -e "TooR\nTooR" | passwd admin
+    #chroot /mnt echo -e "TooR\nTooR" | passwd admin
+    echo -e "TooR\nTooR" | chroot /mnt passwd admin
 
 }
 

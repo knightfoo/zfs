@@ -167,7 +167,7 @@ conf_os() {
 	chroot /mnt apt update	
 	#chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
-	#chroot /mnt apt install --yes zfsutils-linux zfs-initramfs zfs-dkms zfs-zed linux-image-$(uname -r) linux-image-extra-$(uname -r) linux-headers-$(uname -r) grub2-common grub-pc acpi-support vim sendmail
+	#chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-$(uname -r) linux-image-extra-$(uname -r) linux-headers-$(uname -r) grub2-common grub-pc acpi-support vim 
 	#chroot /mnt apt install --yes --no-install-recommends linux-image-generic
 	#chroot /mnt apt install --yes zfs-initramfs
 
@@ -201,6 +201,6 @@ else
 	create_zpool
 	create_datasets
 	install_ubuntu
-	conf_os
+	#conf_os
 fi
 

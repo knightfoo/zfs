@@ -174,6 +174,10 @@ conf_os() {
         do
 		grub-install --root-directory=/mnt ${d_}
 	done
+
+    echo "Root password"
+    echo -e "TooR\nTooR" | passwd root
+
 }
 
 

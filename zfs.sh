@@ -167,17 +167,12 @@ conf_os() {
 	chroot /mnt apt update	
 	#chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
-	#chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-$(uname -r) linux-image-extra-$(uname -r) linux-headers-$(uname -r) grub2-common grub-pc acpi-support vim 
-	#chroot /mnt apt install --yes --no-install-recommends linux-image-generic
-	#chroot /mnt apt install --yes zfs-initramfs
-
-	#chroot /mnt apt install --yes grub-pc
+	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim 
 
 	grub-probe /mnt
 	for d_ in ${DISKS_dev[@]};
         do
 		grub-install --root-directory=/mnt ${d_}
-		chroot /mnt 
 	done
 }
 

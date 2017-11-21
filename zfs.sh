@@ -14,6 +14,8 @@ hostname=$1
 DISKS_byid=()
 DISKS_dev=()
 
+usb_drive=sde
+
 export ZPOOL_VDEV_NAME_PATH=YES
 
 cleanall() {
@@ -35,7 +37,7 @@ disks() {
 		d_id=$(ls -la /dev/disk/by-id/ |grep ${d_}$ | awk '{print $9}')
 		DISKS_byid+=("/dev/disk/by-id/${d_id}")
 		DISKS_dev+=("/dev/${d_}")
-	done< <(lsblk -io KNAME,TYPE| grep disk | awk '{print $1}')
+	done< <(lsblk -io KNAME,TYPE| grep disk | grep -v ${usb_drive} | awk '{print $1}')
 }
 
 clean_disks() {
@@ -167,7 +169,7 @@ conf_os() {
 	chroot /mnt apt update	
 	#chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
-	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim openssh-server
+	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim-tiny openssh-server
 
 	grub-probe /mnt
 	for d_ in ${DISKS_dev[@]};

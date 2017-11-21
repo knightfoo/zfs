@@ -34,7 +34,7 @@ apt_zfs() {
 disks() {
 	while read d_; 
 	do 
-		d_id=$(ls -la /dev/disk/by-id/ |grep ${d_}$ | awk '{print $9}')
+		d_id=$(ls -la /dev/disk/by-id/ |grep ${d_}$ | grep 'ata-' |awk '{print $9}')
 		DISKS_byid+=("/dev/disk/by-id/${d_id}")
 		DISKS_dev+=("/dev/${d_}")
 	done< <(lsblk -io KNAME,TYPE| grep disk | grep -v ${usb_drive} | awk '{print $1}')

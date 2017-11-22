@@ -205,6 +205,7 @@ else
 	disks
 	clean_disks
 	partition_disks
+    sleep 5
 	create_zpool
 	create_datasets
 	#install_ubuntu

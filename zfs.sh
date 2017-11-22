@@ -208,7 +208,7 @@ else
     sleep 5
 	create_zpool
 	create_datasets
-	#install_ubuntu
-	#conf_os
+	install_ubuntu
+	conf_os
 fi
 

@@ -14,7 +14,7 @@ hostname=$1
 DISKS_byid=()
 DISKS_dev=()
 
-usb_drive=sde
+usb_drive=sdc
 
 export ZPOOL_VDEV_NAME_PATH=YES
 

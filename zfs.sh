@@ -169,7 +169,7 @@ conf_os() {
 	chroot /mnt dpkg-reconfigure -f noninteractive tzdata
 	chroot /mnt ln -s /proc/self/mounts /etc/mtab
 	chroot /mnt apt update	
-	#chroot /mnt apt install --yes ubuntu-minimal
+	chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
 	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim-tiny openssh-server
 

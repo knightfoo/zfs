@@ -14,7 +14,7 @@ hostname=$1
 DISKS_byid=()
 DISKS_dev=()
 
-usb_drive=sdc
+usb_drive=sd666
 
 export ZPOOL_VDEV_NAME_PATH=YES
 
@@ -31,12 +31,30 @@ apt_zfs() {
 	apt install --yes debootstrap gdisk zfs-initramfs
 }
 
-disks() {
+disks_() {
 	while read d_; 
 	do 
 		d_id=$(ls -la /dev/disk/by-id/ |grep ${d_}$ | grep 'ata-' |awk '{print $9}')
 		DISKS_byid+=("/dev/disk/by-id/${d_id}")
 		DISKS_dev+=("/dev/${d_}")
+	done< <(lsblk -io KNAME,TYPE| grep disk | grep -v ${usb_drive} | awk '{print $1}')
+}
+
+disks() {
+	size=$1
+	echo "Prawilny disk size to = ${size}"
+	while read d_; 
+	do
+		d_s_=$(lsblk -no SIZE /dev/${d_} | grep -Eo '[A-Z,0-9]+')
+		if [ "${d_s_}" == "${size}" ];
+		then
+			echo "${d_s_} == ${size}"
+			d_id=$(ls -la /dev/disk/by-id/ |grep ${d_}$ | grep 'ata-' |awk '{print $9}')
+			DISKS_byid+=("/dev/disk/by-id/${d_id}")
+			DISKS_dev+=("/dev/${d_}")
+		else
+			echo "${d_s_} != ${size}"
+		fi
 	done< <(lsblk -io KNAME,TYPE| grep disk | grep -v ${usb_drive} | awk '{print $1}')
 }
 
@@ -193,19 +211,29 @@ if [ "$1" == "apt" ];
 then
 	apt_zfs
 
+elif [ "$1" == "disk" ]; then
+	echo "Dyski sprawdzam"
+	disks $2
+
+	for d_ in ${DISKS_dev[@]};
+	do 
+		echo "Dysk - ${d_}"
+	done
+
+	
 elif [ "$1" == "clean" ]; then
 	for i in /dev /dev/pts /proc /sys /run; do umount -f /mnt$i; done
 	cleanall
 	zpool destroy -f ${zpool_name}
-	disks
+	disks $2
 	clean_disks
 else
 	echo "tu"
 	zpool destroy -f ${zpool_name}
-	disks
+	disks $2
 	clean_disks
 	partition_disks
-    sleep 5
+    	sleep 5
 	create_zpool
 	create_datasets
 	install_ubuntu

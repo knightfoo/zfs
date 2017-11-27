@@ -233,7 +233,7 @@ else
 	disks $1
 	clean_disks
 	partition_disks
-    	sleep 5
+   	sleep 5
 	create_zpool
 	create_datasets
 	install_ubuntu

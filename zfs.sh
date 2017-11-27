@@ -48,12 +48,12 @@ disks() {
 		d_s_=$(lsblk -no SIZE /dev/${d_} | grep -Eo '[A-Z,0-9]+')
 		if [ "${d_s_}" == "${size}" ];
 		then
-			echo "${d_s_} == ${size}"
+			echo "Dysk - ${d_} - ${d_s_} == ${size}"
 			d_id=$(ls -la /dev/disk/by-id/ |grep ${d_}$ | grep 'ata-' |awk '{print $9}')
 			DISKS_byid+=("/dev/disk/by-id/${d_id}")
 			DISKS_dev+=("/dev/${d_}")
 		else
-			echo "${d_s_} != ${size}"
+			echo "Dysk - ${d_} - ${d_s_} == ${size}"
 		fi
 	done< <(lsblk -io KNAME,TYPE| grep disk | grep -v ${usb_drive} | awk '{print $1}')
 }
@@ -228,9 +228,9 @@ elif [ "$1" == "clean" ]; then
 	disks $2
 	clean_disks
 else
-	echo "tu"
+	echo "Tworze SYSTEM!!!!"
 	zpool destroy -f ${zpool_name}
-	disks $2
+	disks $1
 	clean_disks
 	partition_disks
     	sleep 5

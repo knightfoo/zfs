@@ -45,7 +45,8 @@ disks() {
 	echo "Prawilny disk size to = ${size}"
 	while read d_; 
 	do
-		d_s_=$(lsblk -no SIZE /dev/${d_} | grep -Eo '[A-Z,0-9]+')
+		#d_s_=$(lsblk -nio NAME,SIZE,TYPE /dev/${d_} | grep disk | grep -Eo '[A-Z,0-9]+')
+		d_s_=$(lsblk -nio NAME,SIZE,TYPE /dev/${d_} | grep disk | awk '{print $2}')
 		if [ "${d_s_}" == "${size}" ];
 		then
 			echo "Dysk - ${d_} - ${d_s_} == ${size}"
@@ -219,7 +220,6 @@ elif [ "$1" == "disk" ]; then
 	do 
 		echo "Dysk - ${d_}"
 	done
-
 	
 elif [ "$1" == "clean" ]; then
 	for i in /dev /dev/pts /proc /sys /run; do umount -f /mnt$i; done

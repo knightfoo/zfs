@@ -24,6 +24,7 @@ cleanall() {
 	killall -9 nautilus
 	umount -l /mnt
 	zpool destroy -f tank0
+    zpool destroy -f lxd
 }
 
 apt_zfs() {
@@ -122,7 +123,7 @@ create_zpool_lxd() {
  		if [ ${SPAN} -eq 0 ]
  		then
             echo "Create ${zpool_lxd_name} - ${dyski}"
-  			zpool create -f -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/ -R /mnt/lxd ${zpool_lxd_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part3" " " arr[span+span+2]"-part3" }'`
+  			zpool create -f -o ashift=12 -O atime=off -O canmount=off -O compression=lz4 -O normalization=formD -O mountpoint=/lxd -R /mnt/lxd ${zpool_lxd_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part3" " " arr[span+span+2]"-part3" }'`
  		else
             echo "Dodaje dysk ${zpool_lxd_name} - ${dyski}"
   			zpool add -f ${zpool_lxd_name} mirror `echo | awk -v span=${SPAN} -v zfsparts="${dyski}" '{ split(zfsparts,arr," "); print arr[span+span+1]"-part3" " " arr[span+span+2]"-part3" }'`
@@ -212,7 +213,7 @@ conf_os() {
 	chroot /mnt apt update
 	chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
-	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim-tiny openssh-server
+	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim-tiny openssh-server lxd
 
 	grub-probe /mnt
 	for d_ in ${DISKS_dev[@]};

@@ -256,7 +256,8 @@ else
 	clean_disks
 	partition_disks
    	sleep 5
-	create_zpool
+	create_zpool_main
+    create_zpool_lxd
 	create_datasets
 	install_ubuntu
 	conf_os

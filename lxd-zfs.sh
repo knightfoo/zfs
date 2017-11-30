@@ -213,7 +213,7 @@ conf_os() {
 	chroot /mnt apt update
 	chroot /mnt apt install --yes ubuntu-minimal
 	chroot /mnt apt install --yes vim-tiny
-	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim-tiny openssh-server lxd
+	chroot /mnt apt install --yes zfsutils-linux zfs-initramfs linux-image-generic grub2-common grub-pc acpi-support vim-tiny openssh-server
 
 	grub-probe /mnt
 	for d_ in ${DISKS_dev[@]};
